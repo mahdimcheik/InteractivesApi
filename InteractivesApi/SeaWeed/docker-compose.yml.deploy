@@ -1,0 +1,54 @@
+﻿version: '3.8'
+
+services:
+  master:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs-master
+    command: "master -ip=master -peers=master:9333"
+    volumes:
+      - master_data:/data
+    networks:
+      - seaweed_internal
+    restart: unless-stopped
+
+  volume:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs-volume
+    command: "volume -mserver=master:9333 -ip=volume -port=8080"
+    volumes:
+      - volume_data:/data
+    depends_on:
+      - master
+    networks:
+      - seaweed_internal
+    restart: unless-stopped
+
+  filer:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs-filer
+    # Without -s3.config the gateway has no identities and rejects every signed request, which
+    # is all the AWS SDK sends. CHANGE the credentials in s3.json before deploying — they are
+    # dev placeholders and must match S3_ACCESS_KEY / S3_SECRET_KEY in the API's .env.
+    command: "filer -master=master:9333 -ip=filer -s3 -s3.config=/etc/seaweedfs/s3.json"
+    volumes:
+      - filer_data:/data
+      - ./s3.json:/etc/seaweedfs/s3.json:ro
+    depends_on:
+      - master
+      - volume
+    networks:
+      - seaweed_internal   # Communique avec Master et Volume
+      - global_network     # Communique avec les autres conteneurs (ex: API, frontend)
+    restart: unless-stopped
+
+volumes:
+  master_data:
+  volume_data:
+  filer_data:
+
+networks:
+  seaweed_internal:
+    driver: bridge
+    internal: true # Rend le réseau strictement privé (pas d'accès internet sortant/entrant pour ces conteneurs)
+  global_network:
+    external: true # Indique que ce réseau existe déjà au niveau du moteur Docker
