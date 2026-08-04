@@ -27,46 +27,91 @@ namespace InteractivesApi.Controllers
         }
 
         [HttpGet("{slideId:guid}")]
-        public async Task<ActionResult<Response<SlideDetails>>> GetSlide(Guid presentationId, Guid slideId)
+        public async Task<ActionResult<Response<SlideDetails>>> GetSlide(
+            Guid presentationId,
+            Guid slideId
+        )
         {
-            var result = await _presentationService.GetSlide(presentationId, slideId, HttpContext.User);
+            var result = await _presentationService.GetSlide(
+                presentationId,
+                slideId,
+                HttpContext.User
+            );
             return StatusCode(result.Status, result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Response<SlideDetails>>> CreateSlide(Guid presentationId, [FromBody] CreateSlideRequest model)
+        public async Task<ActionResult<Response<SlideDetails>>> CreateSlide(
+            Guid presentationId,
+            [FromBody] CreateSlideRequest model
+        )
         {
             if (!ModelState.IsValid)
-                return BadRequest(new Response<object> { Status = 400, Message = "Problème de validation." });
+                return BadRequest(
+                    new Response<object> { Status = 400, Message = "Problème de validation." }
+                );
 
-            var result = await _presentationService.CreateSlide(presentationId, model, HttpContext.User);
+            var result = await _presentationService.CreateSlide(
+                presentationId,
+                model,
+                HttpContext.User
+            );
             return StatusCode(result.Status, result);
         }
 
         [HttpPut("{slideId:guid}")]
-        public async Task<ActionResult<Response<SlideDetails>>> UpdateSlide(Guid presentationId, Guid slideId, [FromBody] UpdateSlideRequest model)
+        public async Task<ActionResult<Response<SlideDetails>>> UpdateSlide(
+            Guid presentationId,
+            Guid slideId,
+            [FromBody] UpdateSlideRequest model
+        )
         {
             if (!ModelState.IsValid)
-                return BadRequest(new Response<object> { Status = 400, Message = "Problème de validation." });
+                return BadRequest(
+                    new Response<object> { Status = 400, Message = "Problème de validation." }
+                );
 
-            var result = await _presentationService.UpdateSlide(presentationId, slideId, model, HttpContext.User);
+            var result = await _presentationService.UpdateSlide(
+                presentationId,
+                slideId,
+                model,
+                HttpContext.User
+            );
             return StatusCode(result.Status, result);
         }
 
         [HttpDelete("{slideId:guid}")]
-        public async Task<ActionResult<Response<object>>> DeleteSlide(Guid presentationId, Guid slideId)
+        public async Task<ActionResult<Response<object>>> DeleteSlide(
+            Guid presentationId,
+            Guid slideId
+        )
         {
-            var result = await _presentationService.DeleteSlide(presentationId, slideId, HttpContext.User);
+            var result = await _presentationService.DeleteSlide(
+                presentationId,
+                slideId,
+                HttpContext.User
+            );
             return StatusCode(result.Status, result);
         }
 
         [HttpPost("reorder")]
-        public async Task<ActionResult<Response<object>>> ReorderSlides(Guid presentationId, [FromBody] ReorderSlidesRequest model)
+        public async Task<ActionResult<Response<object>>> ReorderSlides(
+            Guid presentationId,
+            [FromBody] ReorderSlidesRequest model
+        )
         {
             if (!ModelState.IsValid)
-                return BadRequest(new Response<object> { Status = 400, Message = "Problème de validation." });
+            {
+                return BadRequest(
+                    new Response<object> { Status = 400, Message = "Problème de validation." }
+                );
+            }
 
-            var result = await _presentationService.ReorderSlides(presentationId, model, HttpContext.User);
+            var result = await _presentationService.ReorderSlides(
+                presentationId,
+                model,
+                HttpContext.User
+            );
             return StatusCode(result.Status, result);
         }
     }
