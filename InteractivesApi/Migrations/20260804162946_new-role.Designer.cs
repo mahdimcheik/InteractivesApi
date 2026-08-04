@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InteractivesApi.Migrations
 {
     [DbContext(typeof(MainContext))]
-    [Migration("20260728214541_DropTechnicianRole")]
-    partial class DropTechnicianRole
+    [Migration("20260804162946_new-role")]
+    partial class newrole
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -96,6 +96,13 @@ namespace InteractivesApi.Migrations
                             ConcurrencyStamp = "a0000000-0000-0000-0000-000000000004",
                             Name = "Client",
                             NormalizedName = "CLIENT"
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000005"),
+                            ConcurrencyStamp = "a0000000-0000-0000-0000-000000000005",
+                            Name = "Professionnal",
+                            NormalizedName = "PROFESSIONNAL"
                         });
                 });
 

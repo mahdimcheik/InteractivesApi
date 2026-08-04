@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InteractivesApi.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class newrole : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -221,8 +221,8 @@ namespace InteractivesApi.Migrations
                 {
                     { new Guid("a0000000-0000-0000-0000-000000000001"), "a0000000-0000-0000-0000-000000000001", "SuperAdmin", "SUPERADMIN" },
                     { new Guid("a0000000-0000-0000-0000-000000000002"), "a0000000-0000-0000-0000-000000000002", "Admin", "ADMIN" },
-                    { new Guid("a0000000-0000-0000-0000-000000000003"), "a0000000-0000-0000-0000-000000000003", "Technician", "TECHNICIAN" },
-                    { new Guid("a0000000-0000-0000-0000-000000000004"), "a0000000-0000-0000-0000-000000000004", "Client", "CLIENT" }
+                    { new Guid("a0000000-0000-0000-0000-000000000004"), "a0000000-0000-0000-0000-000000000004", "Client", "CLIENT" },
+                    { new Guid("a0000000-0000-0000-0000-000000000005"), "a0000000-0000-0000-0000-000000000005", "Professionnal", "PROFESSIONNAL" }
                 });
 
             migrationBuilder.InsertData(

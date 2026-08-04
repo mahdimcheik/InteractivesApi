@@ -6,6 +6,7 @@
         public static Guid ROLE_SUPER_ADMIN => Guid.Parse("a0000000-0000-0000-0000-000000000001");
         public static Guid ROLE_ADMIN => Guid.Parse("a0000000-0000-0000-0000-000000000002");
         public static Guid ROLE_CLIENT => Guid.Parse("a0000000-0000-0000-0000-000000000004");
+        public static Guid ROLE_PROFESSIONAL => Guid.Parse("a0000000-0000-0000-0000-000000000005");
 
         // Account statuses (StatusAccount lookup table).
         public static Guid ACCOUNT_ACTIVE => Guid.Parse("b0000000-0000-0000-0000-000000000001");
@@ -16,6 +17,7 @@
         public const string ROLE_NAME_SUPER_ADMIN = "SuperAdmin";
         public const string ROLE_NAME_ADMIN = "Admin";
         public const string ROLE_NAME_CLIENT = "Client";
+        public const string ROLE_NAME_PROFESSIONAL = "Professionnal";
     }
 
     /// <summary>Roles. Persisted by name in Identity; order is not persisted.</summary>
@@ -24,6 +26,7 @@
         SuperAdmin,
         Admin,
         Client,
+        Professionnal,
     }
 
     /// <summary>Account lifecycle status.</summary>
@@ -64,5 +67,4 @@
         Private,
         Public,
     }
-
 }
