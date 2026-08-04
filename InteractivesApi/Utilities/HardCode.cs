@@ -51,6 +51,14 @@
         Video,
     }
 
+    /// <summary>Type d'un élément de slide (texte, image, quiz...). Persisted as int — append-only.</summary>
+    public enum ElementTypeEnum
+    {
+        Text,
+        Image,
+        Quiz,
+    }
+
     /// <summary>Storage backend. Not persisted — used only to pick an IStorageService.</summary>
     public enum StorageProviderEnum
     {

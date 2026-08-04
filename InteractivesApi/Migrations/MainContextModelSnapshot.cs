@@ -22,6 +22,124 @@ namespace InteractivesApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Element", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Configuration")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double>("Height")
+                        .HasColumnType("double precision");
+
+                    b.Property<bool>("Locked")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Rotation")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid>("SlideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Visible")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Width")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("X")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Y")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ZIndex")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SlideId");
+
+                    b.ToTable("Elements");
+                });
+
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Presentation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.ToTable("Presentations");
+                });
+
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Slide", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("BackgroundColor")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PresentationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PresentationId", "Order");
+
+                    b.ToTable("Slides");
+                });
+
             modelBuilder.Entity("InteractivesApi.Models.Users.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -371,6 +489,39 @@ namespace InteractivesApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Element", b =>
+                {
+                    b.HasOne("InteractivesApi.Models.Presentations.Slide", "Slide")
+                        .WithMany("Elements")
+                        .HasForeignKey("SlideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Slide");
+                });
+
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Presentation", b =>
+                {
+                    b.HasOne("InteractivesApi.Models.Users.UserApp", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+                });
+
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Slide", b =>
+                {
+                    b.HasOne("InteractivesApi.Models.Presentations.Presentation", "Presentation")
+                        .WithMany("Slides")
+                        .HasForeignKey("PresentationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Presentation");
+                });
+
             modelBuilder.Entity("InteractivesApi.Models.Users.RefreshToken", b =>
                 {
                     b.HasOne("InteractivesApi.Models.Users.UserApp", "User")
@@ -442,6 +593,16 @@ namespace InteractivesApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Presentation", b =>
+                {
+                    b.Navigation("Slides");
+                });
+
+            modelBuilder.Entity("InteractivesApi.Models.Presentations.Slide", b =>
+                {
+                    b.Navigation("Elements");
                 });
 
             modelBuilder.Entity("InteractivesApi.Models.Users.StatusAccount", b =>

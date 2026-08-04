@@ -1,4 +1,5 @@
-﻿using InteractivesApi.Models.Users;
+﻿using InteractivesApi.Models.Presentations;
+using InteractivesApi.Models.Users;
 using InteractivesApi.Utilities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,9 @@ namespace InteractivesApi.Contexts
 
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<StatusAccount> StatusAccounts => Set<StatusAccount>();
+        public DbSet<Presentation> Presentations => Set<Presentation>();
+        public DbSet<Slide> Slides => Set<Slide>();
+        public DbSet<Element> Elements => Set<Element>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,6 +29,31 @@ namespace InteractivesApi.Contexts
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<RefreshToken>().HasIndex(r => r.UserId).IsUnique();
+
+            // Slides/Elements are owned by their parent — deleting the parent deletes them.
+            builder
+                .Entity<Slide>()
+                .HasOne(s => s.Presentation)
+                .WithMany(p => p.Slides)
+                .HasForeignKey(s => s.PresentationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder
+                .Entity<Element>()
+                .HasOne(e => e.Slide)
+                .WithMany(s => s.Elements)
+                .HasForeignKey(e => e.SlideId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // A user can't be deleted while owning presentations.
+            builder
+                .Entity<Presentation>()
+                .HasOne(p => p.Creator)
+                .WithMany()
+                .HasForeignKey(p => p.CreatorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Slide>().HasIndex(s => new { s.PresentationId, s.Order });
 
             SeedLookups(builder);
         }

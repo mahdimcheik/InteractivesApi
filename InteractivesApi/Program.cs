@@ -100,6 +100,7 @@ services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(
     }));
 
 services.AddScoped<IAuthService, AuthService>();
+services.AddScoped<IPresentationService, PresentationService>();
 services.AddScoped<MailService>();
 services.AddScoped<IJobService, JobService>();
 
