@@ -88,14 +88,14 @@ namespace InteractivesApi.Models.Users
 
     public class RoleDetails
     {
-        public Guid Id { get; set; }
+        //public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
 
         public RoleDetails() { }
 
         public RoleDetails(RoleApp role)
         {
-            Id = role.Id;
+            //Id = role.Id;
             Name = role.Name ?? string.Empty;
         }
     }

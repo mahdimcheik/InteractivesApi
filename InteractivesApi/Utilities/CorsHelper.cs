@@ -5,7 +5,7 @@
         private static readonly string[] AllowedOrigins =
         {
         "http://localhost:4200",
-        "https://localhost:4200",
+        "https://localhost:4201",
         "http://localhost:5275",
         "https://localhost:7125",
     };

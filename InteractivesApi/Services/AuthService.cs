@@ -73,8 +73,8 @@ namespace InteractivesApi.Services
                     DataProcessingConsent = req.DataProcessingConsent,
                     PrivacyPolicyConsent = req.PrivacyPolicyConsent,
                     AuthProvider = AuthProviderEnum.Local,
-                    StatusId = HardCode.ACCOUNT_PENDING,
-                    EmailConfirmed = false,
+                    StatusId = HardCode.ACCOUNT_ACTIVE,
+                    EmailConfirmed = true,
                 };
 
                 var createResult = await _userManager.CreateAsync(user, req.Password);
@@ -82,6 +82,11 @@ namespace InteractivesApi.Services
                 {
                     await transaction.RollbackAsync();
                     return Fail<UserDetails>(400, DescribeErrors(createResult));
+                }
+
+                if(req.Role != RoleEnum.Professionnal)
+                {
+                    req.Role = RoleEnum.Client;
                 }
 
                 var roleResult = await _userManager.AddToRoleAsync(user, RoleName(req.Role));
