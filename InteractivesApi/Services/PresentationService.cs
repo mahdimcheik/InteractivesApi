@@ -644,8 +644,9 @@ namespace InteractivesApi.Services
         {
             var presentation = await _context
                 .Presentations.Where(p => p.Id == presentationId && p.ArchivedAt == null)
-                .Include(p => p.Slides)
-                .ThenInclude(s => s.Elements)
+                // Suppression logique : les diapositives et éléments archivés ne sont jamais renvoyés.
+                .Include(p => p.Slides.Where(s => s.ArchivedAt == null).OrderBy(s => s.Order))
+                .ThenInclude(s => s.Elements.Where(e => e.ArchivedAt == null))
                 .FirstOrDefaultAsync();
 
             if (presentation is null)

@@ -141,8 +141,10 @@ namespace InteractivesApi.Models.Presentations
             CreatorId = presentation.CreatorId;
             CreatedAt = presentation.CreatedAt;
             UpdatedAt = presentation.UpdatedAt;
-            int count = presentation.Slides.Count();
-            Slides = presentation.Slides.ToList().Select(x => new SlideDetails(x, count)).ToList();
+            Slides = presentation
+                .Slides.OrderBy(s => s.Order)
+                .Select(s => new SlideDetails(s, s.Elements.Count))
+                .ToList();
         }
     }
 
