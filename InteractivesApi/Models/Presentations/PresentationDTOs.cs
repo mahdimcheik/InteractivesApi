@@ -130,6 +130,7 @@ namespace InteractivesApi.Models.Presentations
         public Guid CreatorId { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
+        public List<SlideDetails> Slides { get; set; } = new List<SlideDetails>();
 
         public PresentationDetails() { }
 
@@ -140,6 +141,8 @@ namespace InteractivesApi.Models.Presentations
             CreatorId = presentation.CreatorId;
             CreatedAt = presentation.CreatedAt;
             UpdatedAt = presentation.UpdatedAt;
+            int count = presentation.Slides.Count();
+            Slides = presentation.Slides.ToList().Select(x => new SlideDetails(x, count)).ToList();
         }
     }
 
@@ -150,6 +153,7 @@ namespace InteractivesApi.Models.Presentations
         public int Order { get; set; }
         public string? BackgroundColor { get; set; }
         public int ElementCount { get; set; }
+        public List<ElementDetails> Elements { get; set; } = new();
 
         public SlideDetails() { }
 
@@ -160,6 +164,7 @@ namespace InteractivesApi.Models.Presentations
             Order = slide.Order;
             BackgroundColor = slide.BackgroundColor;
             ElementCount = elementCount;
+            Elements = slide.Elements.Select(x =>  new ElementDetails(x)).ToList();
         }
     }
 

@@ -1,36 +1,95 @@
+using System.Security.Claims;
 using InteractivesApi.Contexts;
 using InteractivesApi.Models.Presentations;
 using InteractivesApi.Models.Responses;
 using InteractivesApi.Models.Users;
 using InteractivesApi.Utilities;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace InteractivesApi.Services
 {
     public interface IPresentationService
     {
         // Presentations
-        Task<Response<PresentationDetails>> CreatePresentation(CreatePresentationRequest req, ClaimsPrincipal principal);
+        Task<Response<PresentationDetails>> CreatePresentation(
+            CreatePresentationRequest req,
+            ClaimsPrincipal principal
+        );
         Task<Response<List<PresentationSummary>>> GetMyPresentations(ClaimsPrincipal principal);
-        Task<Response<PresentationDetails>> GetPresentation(Guid presentationId, ClaimsPrincipal principal);
-        Task<Response<PresentationDetails>> UpdatePresentation(Guid presentationId, UpdatePresentationRequest req, ClaimsPrincipal principal);
+        Task<Response<PresentationDetails>> GetPresentation(
+            Guid presentationId,
+            ClaimsPrincipal principal
+        );
+        Task<Response<PresentationDetails>> UpdatePresentation(
+            Guid presentationId,
+            UpdatePresentationRequest req,
+            ClaimsPrincipal principal
+        );
         Task<Response<object>> DeletePresentation(Guid presentationId, ClaimsPrincipal principal);
 
         // Slides
-        Task<Response<SlideDetails>> CreateSlide(Guid presentationId, CreateSlideRequest req, ClaimsPrincipal principal);
-        Task<Response<List<SlideDetails>>> GetSlides(Guid presentationId, ClaimsPrincipal principal);
-        Task<Response<SlideDetails>> GetSlide(Guid presentationId, Guid slideId, ClaimsPrincipal principal);
-        Task<Response<SlideDetails>> UpdateSlide(Guid presentationId, Guid slideId, UpdateSlideRequest req, ClaimsPrincipal principal);
-        Task<Response<object>> DeleteSlide(Guid presentationId, Guid slideId, ClaimsPrincipal principal);
-        Task<Response<object>> ReorderSlides(Guid presentationId, ReorderSlidesRequest req, ClaimsPrincipal principal);
+        Task<Response<SlideDetails>> CreateSlide(
+            Guid presentationId,
+            CreateSlideRequest req,
+            ClaimsPrincipal principal
+        );
+        Task<Response<List<SlideDetails>>> GetSlides(
+            Guid presentationId,
+            ClaimsPrincipal principal
+        );
+        Task<Response<SlideDetails>> GetSlide(
+            Guid presentationId,
+            Guid slideId,
+            ClaimsPrincipal principal
+        );
+        Task<Response<SlideDetails>> UpdateSlide(
+            Guid presentationId,
+            Guid slideId,
+            UpdateSlideRequest req,
+            ClaimsPrincipal principal
+        );
+        Task<Response<object>> DeleteSlide(
+            Guid presentationId,
+            Guid slideId,
+            ClaimsPrincipal principal
+        );
+        Task<Response<object>> ReorderSlides(
+            Guid presentationId,
+            ReorderSlidesRequest req,
+            ClaimsPrincipal principal
+        );
 
         // Elements
-        Task<Response<ElementDetails>> CreateElement(Guid presentationId, Guid slideId, CreateElementRequest req, ClaimsPrincipal principal);
-        Task<Response<List<ElementDetails>>> GetElements(Guid presentationId, Guid slideId, ClaimsPrincipal principal);
-        Task<Response<ElementDetails>> GetElement(Guid presentationId, Guid slideId, Guid elementId, ClaimsPrincipal principal);
-        Task<Response<ElementDetails>> UpdateElement(Guid presentationId, Guid slideId, Guid elementId, UpdateElementRequest req, ClaimsPrincipal principal);
-        Task<Response<object>> DeleteElement(Guid presentationId, Guid slideId, Guid elementId, ClaimsPrincipal principal);
+        Task<Response<ElementDetails>> CreateElement(
+            Guid presentationId,
+            Guid slideId,
+            CreateElementRequest req,
+            ClaimsPrincipal principal
+        );
+        Task<Response<List<ElementDetails>>> GetElements(
+            Guid presentationId,
+            Guid slideId,
+            ClaimsPrincipal principal
+        );
+        Task<Response<ElementDetails>> GetElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            ClaimsPrincipal principal
+        );
+        Task<Response<ElementDetails>> UpdateElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            UpdateElementRequest req,
+            ClaimsPrincipal principal
+        );
+        Task<Response<object>> DeleteElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            ClaimsPrincipal principal
+        );
     }
 
     public class PresentationService : IPresentationService
@@ -44,7 +103,10 @@ namespace InteractivesApi.Services
 
         // ---- Presentations ----
 
-        public async Task<Response<PresentationDetails>> CreatePresentation(CreatePresentationRequest req, ClaimsPrincipal principal)
+        public async Task<Response<PresentationDetails>> CreatePresentation(
+            CreatePresentationRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -68,18 +130,25 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<List<PresentationSummary>>> GetMyPresentations(ClaimsPrincipal principal)
+        public async Task<Response<List<PresentationSummary>>> GetMyPresentations(
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<List<PresentationSummary>>(401, "Vous n'êtes pas connecté.");
 
-            var rows = await _context.Presentations
-                .Where(p => p.CreatorId == user.Id && p.ArchivedAt == null)
-                .Select(p => new { Presentation = p, SlideCount = p.Slides.Count(s => s.ArchivedAt == null) })
+            var rows = await _context
+                .Presentations.Where(p => p.CreatorId == user.Id && p.ArchivedAt == null)
+                .Select(p => new
+                {
+                    Presentation = p,
+                    SlideCount = p.Slides.Count(s => s.ArchivedAt == null),
+                })
                 .ToListAsync();
 
-            var data = rows.Select(r => new PresentationSummary(r.Presentation, r.SlideCount)).ToList();
+            var data = rows.Select(r => new PresentationSummary(r.Presentation, r.SlideCount))
+                .ToList();
             return new Response<List<PresentationSummary>>
             {
                 Status = 200,
@@ -89,13 +158,20 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<PresentationDetails>> GetPresentation(Guid presentationId, ClaimsPrincipal principal)
+        public async Task<Response<PresentationDetails>> GetPresentation(
+            Guid presentationId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<PresentationDetails>(401, "Vous n'êtes pas connecté.");
 
-            var (presentation, error) = await LoadOwnedPresentation(presentationId, user, principal);
+            var (presentation, error) = await LoadOwnedPresentation(
+                presentationId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<PresentationDetails>(error.Value.Status, error.Value.Message);
 
@@ -107,13 +183,21 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<PresentationDetails>> UpdatePresentation(Guid presentationId, UpdatePresentationRequest req, ClaimsPrincipal principal)
+        public async Task<Response<PresentationDetails>> UpdatePresentation(
+            Guid presentationId,
+            UpdatePresentationRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<PresentationDetails>(401, "Vous n'êtes pas connecté.");
 
-            var (presentation, error) = await LoadOwnedPresentation(presentationId, user, principal);
+            var (presentation, error) = await LoadOwnedPresentation(
+                presentationId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<PresentationDetails>(error.Value.Status, error.Value.Message);
 
@@ -129,13 +213,20 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<object>> DeletePresentation(Guid presentationId, ClaimsPrincipal principal)
+        public async Task<Response<object>> DeletePresentation(
+            Guid presentationId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<object>(401, "Vous n'êtes pas connecté.");
 
-            var (presentation, error) = await LoadOwnedPresentation(presentationId, user, principal);
+            var (presentation, error) = await LoadOwnedPresentation(
+                presentationId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<object>(error.Value.Status, error.Value.Message);
 
@@ -147,17 +238,29 @@ namespace InteractivesApi.Services
 
         // ---- Slides ----
 
-        public async Task<Response<SlideDetails>> CreateSlide(Guid presentationId, CreateSlideRequest req, ClaimsPrincipal principal)
+        public async Task<Response<SlideDetails>> CreateSlide(
+            Guid presentationId,
+            CreateSlideRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<SlideDetails>(401, "Vous n'êtes pas connecté.");
 
-            var (presentation, error) = await LoadOwnedPresentation(presentationId, user, principal);
+            var (presentation, error) = await LoadOwnedPresentation(
+                presentationId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<SlideDetails>(error.Value.Status, error.Value.Message);
 
-            var order = req.Order ?? await _context.Slides.CountAsync(s => s.PresentationId == presentationId && s.ArchivedAt == null);
+            var order =
+                req.Order
+                ?? await _context.Slides.CountAsync(s =>
+                    s.PresentationId == presentationId && s.ArchivedAt == null
+                );
 
             var slide = new Slide
             {
@@ -178,7 +281,10 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<List<SlideDetails>>> GetSlides(Guid presentationId, ClaimsPrincipal principal)
+        public async Task<Response<List<SlideDetails>>> GetSlides(
+            Guid presentationId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -188,10 +294,14 @@ namespace InteractivesApi.Services
             if (error is not null)
                 return Fail<List<SlideDetails>>(error.Value.Status, error.Value.Message);
 
-            var rows = await _context.Slides
-                .Where(s => s.PresentationId == presentationId && s.ArchivedAt == null)
+            var rows = await _context
+                .Slides.Where(s => s.PresentationId == presentationId && s.ArchivedAt == null)
                 .OrderBy(s => s.Order)
-                .Select(s => new { Slide = s, ElementCount = s.Elements.Count(e => e.ArchivedAt == null) })
+                .Select(s => new
+                {
+                    Slide = s,
+                    ElementCount = s.Elements.Count(e => e.ArchivedAt == null),
+                })
                 .ToListAsync();
 
             var data = rows.Select(r => new SlideDetails(r.Slide, r.ElementCount)).ToList();
@@ -204,7 +314,11 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<SlideDetails>> GetSlide(Guid presentationId, Guid slideId, ClaimsPrincipal principal)
+        public async Task<Response<SlideDetails>> GetSlide(
+            Guid presentationId,
+            Guid slideId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -214,7 +328,9 @@ namespace InteractivesApi.Services
             if (error is not null)
                 return Fail<SlideDetails>(error.Value.Status, error.Value.Message);
 
-            var elementCount = await _context.Elements.CountAsync(e => e.SlideId == slideId && e.ArchivedAt == null);
+            var elementCount = await _context.Elements.CountAsync(e =>
+                e.SlideId == slideId && e.ArchivedAt == null
+            );
             return new Response<SlideDetails>
             {
                 Status = 200,
@@ -223,7 +339,12 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<SlideDetails>> UpdateSlide(Guid presentationId, Guid slideId, UpdateSlideRequest req, ClaimsPrincipal principal)
+        public async Task<Response<SlideDetails>> UpdateSlide(
+            Guid presentationId,
+            Guid slideId,
+            UpdateSlideRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -237,7 +358,9 @@ namespace InteractivesApi.Services
             slide.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
 
-            var elementCount = await _context.Elements.CountAsync(e => e.SlideId == slideId && e.ArchivedAt == null);
+            var elementCount = await _context.Elements.CountAsync(e =>
+                e.SlideId == slideId && e.ArchivedAt == null
+            );
             return new Response<SlideDetails>
             {
                 Status = 200,
@@ -246,7 +369,11 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<object>> DeleteSlide(Guid presentationId, Guid slideId, ClaimsPrincipal principal)
+        public async Task<Response<object>> DeleteSlide(
+            Guid presentationId,
+            Guid slideId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -262,7 +389,11 @@ namespace InteractivesApi.Services
             return new Response<object> { Status = 200, Message = "Diapositive supprimée." };
         }
 
-        public async Task<Response<object>> ReorderSlides(Guid presentationId, ReorderSlidesRequest req, ClaimsPrincipal principal)
+        public async Task<Response<object>> ReorderSlides(
+            Guid presentationId,
+            ReorderSlidesRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -272,15 +403,17 @@ namespace InteractivesApi.Services
             if (error is not null)
                 return Fail<object>(error.Value.Status, error.Value.Message);
 
-            var slides = await _context.Slides
-                .Where(s => s.PresentationId == presentationId && s.ArchivedAt == null)
+            var slides = await _context
+                .Slides.Where(s => s.PresentationId == presentationId && s.ArchivedAt == null)
                 .ToListAsync();
 
             var currentIds = slides.Select(s => s.Id).ToHashSet();
             var submittedIds = req.SlideIds;
-            if (submittedIds.Count != currentIds.Count
+            if (
+                submittedIds.Count != currentIds.Count
                 || submittedIds.Distinct().Count() != submittedIds.Count
-                || !submittedIds.All(currentIds.Contains))
+                || !submittedIds.All(currentIds.Contains)
+            )
                 return Fail<object>(400, "Liste de diapositives invalide.");
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -302,12 +435,21 @@ namespace InteractivesApi.Services
                 throw;
             }
 
-            return new Response<object> { Status = 200, Message = "Ordre des diapositives mis à jour." };
+            return new Response<object>
+            {
+                Status = 200,
+                Message = "Ordre des diapositives mis à jour.",
+            };
         }
 
         // ---- Elements ----
 
-        public async Task<Response<ElementDetails>> CreateElement(Guid presentationId, Guid slideId, CreateElementRequest req, ClaimsPrincipal principal)
+        public async Task<Response<ElementDetails>> CreateElement(
+            Guid presentationId,
+            Guid slideId,
+            CreateElementRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -321,8 +463,8 @@ namespace InteractivesApi.Services
             if (configError is not null)
                 return Fail<ElementDetails>(400, configError);
 
-            var currentMaxZIndex = await _context.Elements
-                .Where(e => e.SlideId == slideId && e.ArchivedAt == null)
+            var currentMaxZIndex = await _context
+                .Elements.Where(e => e.SlideId == slideId && e.ArchivedAt == null)
                 .Select(e => (int?)e.ZIndex)
                 .MaxAsync();
             var zIndex = req.ZIndex ?? (currentMaxZIndex + 1 ?? 0);
@@ -354,7 +496,11 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<List<ElementDetails>>> GetElements(Guid presentationId, Guid slideId, ClaimsPrincipal principal)
+        public async Task<Response<List<ElementDetails>>> GetElements(
+            Guid presentationId,
+            Guid slideId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
@@ -364,8 +510,8 @@ namespace InteractivesApi.Services
             if (error is not null)
                 return Fail<List<ElementDetails>>(error.Value.Status, error.Value.Message);
 
-            var elements = await _context.Elements
-                .Where(e => e.SlideId == slideId && e.ArchivedAt == null)
+            var elements = await _context
+                .Elements.Where(e => e.SlideId == slideId && e.ArchivedAt == null)
                 .OrderBy(e => e.ZIndex)
                 .ToListAsync();
 
@@ -379,13 +525,24 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<ElementDetails>> GetElement(Guid presentationId, Guid slideId, Guid elementId, ClaimsPrincipal principal)
+        public async Task<Response<ElementDetails>> GetElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<ElementDetails>(401, "Vous n'êtes pas connecté.");
 
-            var (_, _, element, error) = await LoadOwnedElement(presentationId, slideId, elementId, user, principal);
+            var (_, _, element, error) = await LoadOwnedElement(
+                presentationId,
+                slideId,
+                elementId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<ElementDetails>(error.Value.Status, error.Value.Message);
 
@@ -397,17 +554,32 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<ElementDetails>> UpdateElement(Guid presentationId, Guid slideId, Guid elementId, UpdateElementRequest req, ClaimsPrincipal principal)
+        public async Task<Response<ElementDetails>> UpdateElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            UpdateElementRequest req,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<ElementDetails>(401, "Vous n'êtes pas connecté.");
 
-            var (_, _, element, error) = await LoadOwnedElement(presentationId, slideId, elementId, user, principal);
+            var (_, _, element, error) = await LoadOwnedElement(
+                presentationId,
+                slideId,
+                elementId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<ElementDetails>(error.Value.Status, error.Value.Message);
 
-            var configError = ElementConfigurationValidator.Validate(element!.Type, req.Configuration);
+            var configError = ElementConfigurationValidator.Validate(
+                element!.Type,
+                req.Configuration
+            );
             if (configError is not null)
                 return Fail<ElementDetails>(400, configError);
 
@@ -432,13 +604,24 @@ namespace InteractivesApi.Services
             };
         }
 
-        public async Task<Response<object>> DeleteElement(Guid presentationId, Guid slideId, Guid elementId, ClaimsPrincipal principal)
+        public async Task<Response<object>> DeleteElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            ClaimsPrincipal principal
+        )
         {
             var user = CheckUser.GetUserFromClaim(principal, _context);
             if (user is null)
                 return Fail<object>(401, "Vous n'êtes pas connecté.");
 
-            var (_, _, element, error) = await LoadOwnedElement(presentationId, slideId, elementId, user, principal);
+            var (_, _, element, error) = await LoadOwnedElement(
+                presentationId,
+                slideId,
+                elementId,
+                user,
+                principal
+            );
             if (error is not null)
                 return Fail<object>(error.Value.Status, error.Value.Message);
 
@@ -451,13 +634,19 @@ namespace InteractivesApi.Services
         // ---- Ownership helpers ----
 
         private static bool IsAdmin(ClaimsPrincipal principal) =>
-            principal.IsInRole(HardCode.ROLE_NAME_ADMIN) || principal.IsInRole(HardCode.ROLE_NAME_SUPER_ADMIN);
+            principal.IsInRole(HardCode.ROLE_NAME_ADMIN)
+            || principal.IsInRole(HardCode.ROLE_NAME_SUPER_ADMIN);
 
-        private async Task<(Presentation? Presentation, (int Status, string Message)? Error)> LoadOwnedPresentation(
-            Guid presentationId, UserApp user, ClaimsPrincipal principal)
+        private async Task<(
+            Presentation? Presentation,
+            (int Status, string Message)? Error
+        )> LoadOwnedPresentation(Guid presentationId, UserApp user, ClaimsPrincipal principal)
         {
-            var presentation = await _context.Presentations
-                .FirstOrDefaultAsync(p => p.Id == presentationId && p.ArchivedAt == null);
+            var presentation = await _context
+                .Presentations.Where(p => p.Id == presentationId && p.ArchivedAt == null)
+                .Include(p => p.Slides)
+                .ThenInclude(s => s.Elements)
+                .FirstOrDefaultAsync();
 
             if (presentation is null)
                 return (null, (404, "Présentation introuvable."));
@@ -472,15 +661,28 @@ namespace InteractivesApi.Services
         /// Also checks <paramref name="slideId"/> actually belongs to <paramref name="presentationId"/>
         /// (IDOR guard) — a mismatch fails 404, not 403, to avoid confirming the other slide exists.
         /// </summary>
-        private async Task<(Presentation? Presentation, Slide? Slide, (int Status, string Message)? Error)> LoadOwnedSlide(
-            Guid presentationId, Guid slideId, UserApp user, ClaimsPrincipal principal)
+        private async Task<(
+            Presentation? Presentation,
+            Slide? Slide,
+            (int Status, string Message)? Error
+        )> LoadOwnedSlide(
+            Guid presentationId,
+            Guid slideId,
+            UserApp user,
+            ClaimsPrincipal principal
+        )
         {
-            var (presentation, error) = await LoadOwnedPresentation(presentationId, user, principal);
+            var (presentation, error) = await LoadOwnedPresentation(
+                presentationId,
+                user,
+                principal
+            );
             if (error is not null)
                 return (null, null, error);
 
-            var slide = await _context.Slides
-                .FirstOrDefaultAsync(s => s.Id == slideId && s.PresentationId == presentationId && s.ArchivedAt == null);
+            var slide = await _context.Slides.FirstOrDefaultAsync(s =>
+                s.Id == slideId && s.PresentationId == presentationId && s.ArchivedAt == null
+            );
             if (slide is null)
                 return (null, null, (404, "Diapositive introuvable."));
 
@@ -488,15 +690,31 @@ namespace InteractivesApi.Services
         }
 
         /// <summary>Same IDOR guard as <see cref="LoadOwnedSlide"/>, one level deeper.</summary>
-        private async Task<(Presentation? Presentation, Slide? Slide, Element? Element, (int Status, string Message)? Error)> LoadOwnedElement(
-            Guid presentationId, Guid slideId, Guid elementId, UserApp user, ClaimsPrincipal principal)
+        private async Task<(
+            Presentation? Presentation,
+            Slide? Slide,
+            Element? Element,
+            (int Status, string Message)? Error
+        )> LoadOwnedElement(
+            Guid presentationId,
+            Guid slideId,
+            Guid elementId,
+            UserApp user,
+            ClaimsPrincipal principal
+        )
         {
-            var (presentation, slide, error) = await LoadOwnedSlide(presentationId, slideId, user, principal);
+            var (presentation, slide, error) = await LoadOwnedSlide(
+                presentationId,
+                slideId,
+                user,
+                principal
+            );
             if (error is not null)
                 return (null, null, null, error);
 
-            var element = await _context.Elements
-                .FirstOrDefaultAsync(e => e.Id == elementId && e.SlideId == slideId && e.ArchivedAt == null);
+            var element = await _context.Elements.FirstOrDefaultAsync(e =>
+                e.Id == elementId && e.SlideId == slideId && e.ArchivedAt == null
+            );
             if (element is null)
                 return (null, null, null, (404, "Élément introuvable."));
 
