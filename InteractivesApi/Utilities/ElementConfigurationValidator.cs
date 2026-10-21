@@ -28,12 +28,26 @@ namespace InteractivesApi.Utilities
                 ElementTypeEnum.Text => root.TryGetProperty("content", out _)
                     ? null
                     : "Le texte doit contenir un champ 'content'.",
-                ElementTypeEnum.Image => root.TryGetProperty("assetId", out _)
+                ElementTypeEnum.Image => root.TryGetProperty("url", out _)
                     ? null
-                    : "L'image doit contenir un champ 'assetId'.",
+                    : "L'image doit contenir un champ 'url'.",
                 ElementTypeEnum.Quiz => ValidateQuiz(root),
+                ElementTypeEnum.TextImageTitle => ValidateTextImageTitle(root),
                 _ => "Type d'élément inconnu.",
             };
+        }
+
+        private static string? ValidateTextImageTitle(JsonElement root)
+        {
+            if (!root.TryGetProperty("title", out _) || !root.TryGetProperty("body", out _))
+                return "L'élément titre + texte + image doit contenir 'title' et 'body'.";
+
+            if (!root.TryGetProperty("image", out var image)
+                || image.ValueKind != JsonValueKind.Object
+                || !image.TryGetProperty("url", out _))
+                return "L'élément titre + texte + image doit contenir un objet 'image' avec 'url'.";
+
+            return null;
         }
 
         private static string? ValidateQuiz(JsonElement root)

@@ -57,6 +57,7 @@
         Text,
         Image,
         Quiz,
+        TextImageTitle,
     }
 
     /// <summary>Storage backend. Not persisted — used only to pick an IStorageService.</summary>
