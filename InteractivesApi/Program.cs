@@ -5,6 +5,7 @@ using Amazon.S3.Util;
 using InteractivesApi.Contexts;
 using InteractivesApi.Models.Responses;
 using InteractivesApi.Models.Users;
+using InteractivesApi.Hubs;
 using InteractivesApi.Services;
 using InteractivesApi.Utilities;
 using Hangfire;
@@ -73,7 +74,23 @@ services
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(EnvironmentVariables.JWT_KEY)),
         };
+        // Le navigateur ne peut pas poser d'en-tête Authorization sur un WebSocket : le client
+        // SignalR envoie le jeton dans la chaîne de requête, lu ici pour les seuls hubs.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken)
+                    && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            },
+        };
     });
+
+services.AddSignalR();
+services.AddSingleton<LiveSessionStore>();
 
 services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
@@ -101,6 +118,7 @@ services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(
 
 services.AddScoped<IAuthService, AuthService>();
 services.AddScoped<IPresentationService, PresentationService>();
+services.AddScoped<ILiveSessionService, LiveSessionService>();
 services.AddScoped<MailService>();
 services.AddScoped<IJobService, JobService>();
 
@@ -215,6 +233,7 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<LiveSessionHub>(LiveSessionHub.Path);
 
 // Mapped after the EF migration block above so the Hangfire schema is prepared against a database
 // that already exists. The dashboard has its own Basic-auth filter — it is not covered by the JWT
