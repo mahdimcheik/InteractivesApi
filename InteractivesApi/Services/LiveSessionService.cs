@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 using InteractivesApi.Contexts;
 using InteractivesApi.Hubs;
 using InteractivesApi.Models.LiveSessions;
@@ -74,8 +75,8 @@ namespace InteractivesApi.Services
         }
 
         /// <summary>
-        /// Contenu de la présentation pour un participant, tant que la séance est active.
-        /// Au lot QCM, la configuration servie ici devra être expurgée des bonnes réponses.
+        /// Contenu de la présentation pour un participant, tant que la séance est active. La
+        /// bonne réponse des QCM en est retirée : elle n'est envoyée qu'à la révélation.
         /// </summary>
         public async Task<Response<PresentationDetails>> GetPresentation(
             string code,
@@ -98,7 +99,11 @@ namespace InteractivesApi.Services
             if (presentation is null)
                 return Fail<PresentationDetails>(404, "Présentation introuvable.");
 
-            return Ok(new PresentationDetails(presentation), "Présentation récupérée.");
+            var details = new PresentationDetails(presentation);
+            foreach (var element in details.Slides.SelectMany(s => s.Elements))
+                if (element.Type == ElementTypeEnum.Quiz)
+                    element.Configuration = WithoutCorrectAnswer(element.Configuration);
+            return Ok(details, "Présentation récupérée.");
         }
 
         public async Task<Response<object>> End(string code, ClaimsPrincipal principal)
@@ -116,6 +121,15 @@ namespace InteractivesApi.Services
             _store.End(session);
             await _hub.Clients.Group(session.Code).SendAsync("SessionEnded");
             return new Response<object> { Status = 200, Message = "Séance terminée." };
+        }
+
+        internal static string WithoutCorrectAnswer(string configuration)
+        {
+            var node = JsonNode.Parse(configuration) as JsonObject;
+            if (node is null)
+                return "{}";
+            node.Remove("correct");
+            return node.ToJsonString();
         }
 
         private static Response<T> Ok<T>(T data, string message) =>

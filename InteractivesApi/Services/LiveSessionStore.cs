@@ -8,6 +8,49 @@ namespace InteractivesApi.Services
     /// Séance en direct en cours. Rien n'est conservé après la séance : l'état vit en mémoire
     /// (singleton), et une seule séance est active par présentation.
     /// </summary>
+    /// <summary>Un QCM en cours de séance. La bonne réponse est lue en base à l'ouverture.</summary>
+    public class QuizRun
+    {
+        public required Guid ElementId { get; init; }
+        public required int AnswerCount { get; init; }
+        public required int Correct { get; init; }
+        public QuizStatusEnum Status { get; set; } = QuizStatusEnum.Pending;
+        // userId → (réponse, nom affiché) : une réponse par participant, modifiable tant que le vote est ouvert.
+        public Dictionary<Guid, (int Answer, string Name)> Responses { get; } = new();
+
+        public List<int> Counts() =>
+            Enumerable
+                .Range(0, AnswerCount)
+                .Select(i => Responses.Values.Count(r => r.Answer == i))
+                .ToList();
+
+        public ParticipantQuizState ForParticipant(Guid userId)
+        {
+            var revealed = Status == QuizStatusEnum.Revealed;
+            return new ParticipantQuizState
+            {
+                ElementId = ElementId,
+                Status = Status,
+                MyAnswer = Responses.TryGetValue(userId, out var r) ? r.Answer : null,
+                Counts = revealed ? Counts() : null,
+                Correct = revealed ? Correct : null,
+            };
+        }
+
+        public HostQuizState ForHost() =>
+            new()
+            {
+                ElementId = ElementId,
+                Status = Status,
+                Counts = Counts(),
+                Correct = Status == QuizStatusEnum.Revealed ? Correct : null,
+                Responses = Responses
+                    .Values.OrderBy(r => r.Name)
+                    .Select(r => new QuizResponse { ParticipantName = r.Name, Answer = r.Answer })
+                    .ToList(),
+            };
+    }
+
     public class LiveSession
     {
         private readonly object _lock = new();
@@ -53,6 +96,33 @@ namespace InteractivesApi.Services
                     ? _participants.Values.Distinct().Count()
                     : null;
             }
+        }
+
+        private readonly Dictionary<Guid, QuizRun> _quizzes = new();
+
+        /// <summary>Applique une transition au QCM (créé au premier appel) sous verrou.</summary>
+        public T WithQuiz<T>(Guid elementId, Func<QuizRun> create, Func<QuizRun, T> action)
+        {
+            lock (_lock)
+            {
+                if (!_quizzes.TryGetValue(elementId, out var run))
+                    _quizzes[elementId] = run = create();
+                return action(run);
+            }
+        }
+
+        /// <summary>QCM déjà lancé, ou null.</summary>
+        public T? WithExistingQuiz<T>(Guid elementId, Func<QuizRun, T> action)
+            where T : class
+        {
+            lock (_lock)
+                return _quizzes.TryGetValue(elementId, out var run) ? action(run) : null;
+        }
+
+        public List<T> MapQuizzes<T>(Func<QuizRun, T> map)
+        {
+            lock (_lock)
+                return _quizzes.Values.Select(map).ToList();
         }
 
         public LiveSessionDetails ToDetails() =>

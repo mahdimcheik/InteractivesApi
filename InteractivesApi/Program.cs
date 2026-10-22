@@ -89,7 +89,10 @@ services
         };
     });
 
-services.AddSignalR();
+services
+    .AddSignalR()
+    .AddJsonProtocol(o =>
+        o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 services.AddSingleton<LiveSessionStore>();
 
 services.AddCors(options =>
